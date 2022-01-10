@@ -1,8 +1,8 @@
 # doasedit
 
-## Installation
+sudoedit for doas
 
-### Manual installation
+## Installation
 
 ```sh
 git clone https://git.stefanwimmer128.eu/stefanwimmer128/doasedit.git
