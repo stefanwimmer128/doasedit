@@ -1,0 +1,135 @@
+#!/usr/bin/env sh
+
+set -eu
+
+# https://github.com/ko1nksm/readlinkf
+readlinkf() {
+    [ ${1:+x} ] || return 1; p=$1; until [ _"${p%/}" = _"$p" ]; do p=${p%/}; done
+    [ -e "$p" ] && p=$1; [ -d "$1" ] && p=$p/; set 10 "$(pwd)" "${OLDPWD:-}"; PWD=
+    CDPATH="" cd -P "$2" && while [ "$1" -gt 0 ]; do set "$1" "$2" "$3" "${p%/*}"
+        [ _"$p" = _"$4" ] || { CDPATH="" cd -P "${4:-/}" || break; p=${p##*/}; }
+        [ ! -L "$p" ] && p=${PWD%/}${p:+/}$p && set "$@" "${p:-/}" && break
+        set $(($1-1)) "$2" "$3" "$p"; p=$(ls -dl "$p") || break; p=${p#*" $4 -> "}
+    done 2>/dev/null; cd "$2" && OLDPWD=$3 && [ ${5+x} ] && printf '%s\n' "$5"
+}
+
+NAME='doasedit'
+VERSION='1.0.0'
+
+options=true
+args=0
+while [ $# -gt 0 ]; do
+    if $options && case "$1" in -*) true;; *) false;; esac; then
+        case "$1" in
+            -h|--help)
+                cat << eof
+$NAME $VERSION
+
+USAGE:
+    $NAME [OPTIONS] <FILE>
+
+ARGS:
+    FILE                        File to edit
+
+OPTIONS:
+    -h, --help                  Print help information
+    -v, --version               Print version information
+    -e <EDITOR>                 Set editor to edit the file with [default: ${EDITOR:-vi}]
+    -u <USER>                   Set user to edit the file as [default: root]
+eof
+                exit
+            ;;
+            -v|--version)
+                printf '%s\n' "$VERSION"
+                exit
+            ;;
+            -e)
+                editor="$2"
+                shift
+            ;;
+            -u)
+                user="$2"
+                shift
+            ;;
+            --)
+                options=false
+            ;;
+            *)
+                printf 'Error: Invalid Option "%s"\n' "$1"
+                exit 1
+            ;;
+        esac
+    elif [ $args -eq 0 ]; then
+        file="$1"
+        args=1
+    elif [ $args -ge 1 ]; then
+        printf 'Error: Invalid argument "%s"\n' "$1"
+        exit 1
+    fi
+    shift
+done
+
+if [ -z "${file+_}" ]; then
+    printf 'Error: Missing argument <FILE>\n'
+    exit 1
+fi
+
+: "${editor:="${EDITOR:-vi}"}"
+: "${user:="root"}"
+
+if command -v "$editor" > /dev/null; then
+    editor="$(command -v "$editor")"
+else
+    printf 'Error: Editor "%s" does not exist!\n' "$editor"
+    exit 2
+fi
+
+if ! id "$user" > /dev/null 2>&1; then
+    printf 'Error: User "%s" does not exist!\n' "$user"
+    exit 3
+fi
+
+if readlinkf "$file" > /dev/null; then
+    file="$(readlinkf "$file")"
+else
+    printf 'Error: No vaild file supplied!\n'
+    exit 4
+fi
+
+if [ "$(id -u)" -ne 0 ]; then
+    doas "$0" -e "$editor" -u "$user" "$file"
+    exit
+fi
+
+temp="$(mktemp -d)"
+trap 'rm -rf "$temp"' EXIT
+
+chown "$DOAS_USER":root "$temp"
+chmod 700 "$temp"
+
+if [ -f "$file" ] && doas -nu "$user" sh -c "[ -r '$file' ] && [ -w '$file' ]"; then
+    cp -a "$file" "$temp/file"
+    cp "$temp/file" "$temp/edit"
+    
+    chown "$DOAS_USER":root "$temp/edit"
+    chmod 600 "$temp/edit"
+elif [ ! -e "$file" ] && doas -nu "$user" touch "$file"; then
+    mv "$file" "$temp/file"
+else
+    printf 'Permission denied!\n'
+    exit 5
+fi
+
+doas -nu "$DOAS_USER" "$editor" "$temp/edit"
+
+if [ -f "$temp/edit" ]; then
+    cat "$temp/edit" > "$temp/file"
+    
+    if cmp -s "$temp/file" "$file"; then
+        printf 'File unchanged.\n'
+    else
+        mv -f "$temp/file" "$file"
+    fi
+else
+    printf 'No file created.\n'
+fi
