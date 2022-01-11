@@ -25,6 +25,8 @@ while [ $# -gt 0 ]; do
                 cat << eof
 configure.sh
 
+configure doasedit installation
+
 USAGE:
     configure.sh [OPTIONS]
 
@@ -50,30 +52,31 @@ eof
                 shell="${1#*=}"
             ;;
             --)
-                shift
-                args=1
-                continue
-            ;;
-            -*)
-                printf 'Error: Invalid Option "%s"\n' "$1"
-                exit 1
+                options=false
             ;;
             *)
-                args=1
-                continue
+                printf 'Error: Invalid option "%s"\n' "$1"
+                exit 1
             ;;
         esac
-    elif [ $args -ge 1 ]; then
-        printf 'Error: Invalid argument "%s"\n' "$1"
-        exit 1
+    else
+        case $args in
+            *)
+                printf 'Error: Invalid argument "%s"\n' "$1"
+                exit 1
+            ;;
+        esac
+        
+        args=$((args + 1))
     fi
+    
     shift
 done
 
-: "${prefix:="/usr"}"
-: "${bin_dir:="$prefix/bin"}"
-: "${name:="doasedit"}"
-: "${shell:="/usr/bin/env sh"}"
+: "${prefix="/usr"}"
+: "${bin_dir="$prefix/bin"}"
+: "${name="doasedit"}"
+: "${shell="/usr/bin/env sh"}"
 
 cat << eof > "$DIR/install.conf"
 PREFIX='$prefix'

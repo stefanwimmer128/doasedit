@@ -7,7 +7,7 @@ sudoedit for doas
 ```sh
 git clone https://git.stefanwimmer128.eu/stefanwimmer128/doasedit.git
 cd doasedit
-git checkout v1.0.3
+git checkout v1.1.0
 ./configure.sh
 doas ./install.sh install
 ```
@@ -20,7 +20,7 @@ permit nopass root
 
 To change installation configuration see: `./configure -h`
 
-To uninstall run: `doas ./install.sh remove`
+To uninstall run: `doas ./install.sh uninstall`
 
 ## Usage
 

@@ -25,12 +25,14 @@ while [ $# -gt 0 ]; do
                 cat << eof
 install.sh
 
+manage doasedit installation
+
 USAGE:
     install.sh [OPTIONS] <COMMAND>
 
 COMMAND:
     install                     Install doasedit
-    remove                      Remove doasedit
+    uninstall                   Uninstall doasedit
 
 OPTIONS:
     -h, --help                  Print help information
@@ -41,24 +43,116 @@ eof
                 options=false
             ;;
             *)
-                printf 'Error: Invalid Option "%s"\n' "$1"
+                printf 'Error: Invalid option "%s"\n' "$1"
                 exit 1
             ;;
         esac
-    elif [ $args -eq 0 ]; then
-        case "$1" in
-            install|remove)
+    else
+        case $args in
+            0)
                 command="$1"
+                shift
+                
+                options=true
+                args=0
+                case "$command" in
+                    install)
+                        while [ $# -gt 0 ]; do
+                            if $options && case "$1" in -*) true;; *) false;; esac; then
+                                case "$1" in
+                                    -h|--help)
+                                        cat << eof
+install.sh
+
+Install doasedit
+
+USAGE:
+    install.sh install [OPTIONS]
+
+OPTIONS:
+    -h, --help                  Print help information
+eof
+                                        exit
+                                    ;;
+                                    --)
+                                        options=false
+                                    ;;
+                                    *)
+                                        printf 'Error: Invalid option "%s"\n' "$1"
+                                        exit 1
+                                    ;;
+                                esac
+                            else
+                                case $args in
+                                    *)
+                                        printf 'Error: Invalid argument "%s"\n' "$1"
+                                        exit 1
+                                    ;;
+                                esac
+                                
+                                args=$((args + 1))
+                            fi
+                            
+                            shift
+                        done
+                    ;;
+                    uninstall)
+                        while [ $# -gt 0 ]; do
+                            if $options && case "$1" in -*) true;; *) false;; esac; then
+                                case "$1" in
+                                    -h|--help)
+                                        cat << eof
+install.sh
+
+Uninstall doasedit
+
+USAGE:
+    install.sh uninstall [OPTIONS]
+
+OPTIONS:
+    -h, --help                  Print help information
+eof
+                                        exit
+                                    ;;
+                                    --)
+                                        options=false
+                                    ;;
+                                    *)
+                                        printf 'Error: Invalid option "%s"\n' "$1"
+                                        exit 1
+                                    ;;
+                                esac
+                            else
+                                case $args in
+                                    *)
+                                        printf 'Error: Invalid argument "%s"\n' "$1"
+                                        exit 1
+                                    ;;
+                                esac
+                                
+                                args=$((args + 1))
+                            fi
+                            
+                            shift
+                        done
+                    ;;
+                    *)
+                        printf 'Error: Invalid <COMMAND> "%s"\n' "$command"
+                        exit 1
+                    ;;
+                esac
+                
+                break
             ;;
             *)
-                printf 'Error: Invalid <COMMAND> "%s"\n' "$1"
+                printf 'Error: Invalid argument "%s"\n' "$1"
                 exit 1
             ;;
         esac
-    elif [ $args -ge 1 ]; then
-        printf 'Error: Invalid argument "%s"\n' "$1"
-        exit 1
+        
+        args=$((args + 1))
     fi
+    
     shift
 done
 
@@ -83,7 +177,7 @@ case "$command" in
         sed -i "s|NAME=.*|NAME='$NAME'|" "$bin_path"
         chmod 755 "$bin_path"
     ;;
-    remove)
+    uninstall)
         rm "$bin_path"
     ;;
 esac

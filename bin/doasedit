@@ -25,6 +25,8 @@ while [ $# -gt 0 ]; do
                 cat << eof
 $NAME $VERSION
 
+sudoedit for doas
+
 USAGE:
     $NAME [OPTIONS] <FILE>
 
@@ -55,17 +57,24 @@ eof
                 options=false
             ;;
             *)
-                printf 'Error: Invalid Option "%s"\n' "$1"
+                printf 'Error: Invalid option "%s"\n' "$1"
                 exit 1
             ;;
         esac
-    elif [ $args -eq 0 ]; then
-        file="$1"
-        args=1
-    elif [ $args -ge 1 ]; then
-        printf 'Error: Invalid argument "%s"\n' "$1"
-        exit 1
+    else
+        case $args in
+            0)
+                file="$1"
+            ;;
+            *)
+                printf 'Error: Invalid argument "%s"\n' "$1"
+                exit 1
+            ;;
+        esac
+        
+        args=$((args + 1))
     fi
+    
     shift
 done
 
@@ -74,8 +83,8 @@ if [ -z "${file+_}" ]; then
     exit 1
 fi
 
-: "${editor:="${EDITOR:-vi}"}"
-: "${user:="root"}"
+: "${editor="${EDITOR:-vi}"}"
+: "${user="root"}"
 
 if command -v "$editor" > /dev/null; then
     editor="$(command -v "$editor")"
