@@ -45,7 +45,7 @@ eof
             --bin-dir=*)
                 bin_dir="${1#*=}"
             ;;
-            --bname=*)
+            --name=*)
                 name="${1#*=}"
             ;;
             --shell=*)

@@ -7,7 +7,7 @@ sudoedit for doas
 ```sh
 git clone https://git.stefanwimmer128.eu/stefanwimmer128/doasedit.git
 cd doasedit
-git checkout v1.1.0
+git checkout v1.1.1
 ./configure.sh
 doas ./install.sh install
 ```
