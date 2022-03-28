@@ -116,28 +116,30 @@ trap 'rm -rf "$temp"' EXIT
 chown "$DOAS_USER":root "$temp"
 chmod 700 "$temp"
 
+basename="$(basename "$file")"
+
 if [ -f "$file" ] && doas -nu "$user" sh -c "[ -r '$file' ] && [ -w '$file' ]"; then
-    cp -a "$file" "$temp/file"
-    cp "$temp/file" "$temp/edit"
+    cp -a "$file" "$temp/file.$basename"
+    cp "$temp/file.$basename" "$temp/edit.$basename"
     
-    chown "$DOAS_USER":root "$temp/edit"
-    chmod 600 "$temp/edit"
+    chown "$DOAS_USER":root "$temp/edit.$basename"
+    chmod 600 "$temp/edit.$basename"
 elif [ ! -e "$file" ] && doas -nu "$user" touch "$file"; then
-    mv "$file" "$temp/file"
+    mv "$file" "$temp/file.$basename"
 else
     printf 'Permission denied!\n'
     exit 5
 fi
 
-doas -nu "$DOAS_USER" "$editor" "$temp/edit"
+doas -nu "$DOAS_USER" "$editor" "$temp/edit.$basename"
 
-if [ -f "$temp/edit" ]; then
-    cat "$temp/edit" > "$temp/file"
+if [ -f "$temp/edit.$basename" ]; then
+    cat "$temp/edit.$basename" > "$temp/file.$basename"
     
-    if cmp -s "$temp/file" "$file"; then
+    if cmp -s "$temp/file.$basename"; then
         printf 'File unchanged.\n'
     else
-        mv -f "$temp/file" "$file"
+        mv -f "$temp/file.$basename" "$file"
     fi
 else
     printf 'No file created.\n'
