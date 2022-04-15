@@ -14,7 +14,7 @@ readlinkf() {
 }
 
 NAME='doasedit'
-VERSION='2.0.0'
+VERSION='2.0.1'
 
 options=true
 args=0
