@@ -8,8 +8,8 @@ sudoedit for doas
 git clone https://git.stefanwimmer128.eu/stefanwimmer128/doasedit.git
 cd doasedit
 git checkout v1.2.0
-./configure.sh
-doas ./install.sh install
+make
+doas make install
 ```
 
 Ensure the following line at the top of `doas.conf`:
@@ -17,10 +17,6 @@ Ensure the following line at the top of `doas.conf`:
 ```
 permit nopass root
 ```
-
-To change installation configuration see: `./configure -h`
-
-To uninstall run: `doas ./install.sh uninstall`
 
 ## Usage
 
