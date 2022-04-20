@@ -136,7 +136,7 @@ doas -nu "$DOAS_USER" "$editor" "$temp/edit.$basename"
 if [ -f "$temp/edit.$basename" ]; then
     cat "$temp/edit.$basename" > "$temp/file.$basename"
     
-    if cmp -s "$temp/file.$basename"; then
+    if cmp -s "$temp/file.$basename" "$file"; then
         printf 'File unchanged.\n'
     else
         mv -f "$temp/file.$basename" "$file"
