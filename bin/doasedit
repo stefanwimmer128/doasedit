@@ -83,7 +83,12 @@ if [ -z "${file+_}" ]; then
     exit 1
 fi
 
-: "${editor="${EDITOR:-vi}"}"
+default_editor="${EDITOR:-vi}"
+if [ -n "${DISPLAY:-}" ] && [ -n "${VISUAL:-}"  ]; then
+    default_editor="$VISUAL"
+fi
+
+: "${editor="$default_editor"}"
 : "${user="root"}"
 
 if ! id "$user" > /dev/null 2>&1; then
