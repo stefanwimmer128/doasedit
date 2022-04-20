@@ -86,13 +86,6 @@ fi
 : "${editor="${EDITOR:-vi}"}"
 : "${user="root"}"
 
-if command -v "$editor" > /dev/null; then
-    editor="$(command -v "$editor")"
-else
-    printf 'Error: Editor "%s" does not exist!\n' "$editor"
-    exit 2
-fi
-
 if ! id "$user" > /dev/null 2>&1; then
     printf 'Error: User "%s" does not exist!\n' "$user"
     exit 3
