@@ -131,7 +131,7 @@ else
     exit 5
 fi
 
-doas -nu "$DOAS_USER" "$editor" "$temp/edit.$basename"
+eval "doas -nu '$DOAS_USER' $editor '$temp/edit.$basename'"
 
 if [ -f "$temp/edit.$basename" ]; then
     cat "$temp/edit.$basename" > "$temp/file.$basename"
